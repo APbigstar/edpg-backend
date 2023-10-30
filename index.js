@@ -16,8 +16,6 @@ const salesRoutes = require("./src/routes/sales.js");
 
 require("dotenv").config({ path: ".env" });
 
-console.log(process.env.MONGO_URL);
-
 const app = express();
 app.use(express.json());
 // app.use(rateLimiter);
@@ -44,8 +42,8 @@ mongoose
   })
   .catch((error) => console.log(`${error} did not connect.`));
 
-app.use("/auth", authRoutes);
-app.use("/client", clientRoutes);
-app.use("/general", generalRoutes);
-app.use("/management", managementRoutes);
-app.use("/sales", salesRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/client", clientRoutes);
+app.use("/api/general", generalRoutes);
+app.use("/api/management", managementRoutes);
+app.use("/api/sales", salesRoutes);

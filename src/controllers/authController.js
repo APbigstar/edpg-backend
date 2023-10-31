@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const SignUp = async (req, res, next) => {
   try {
     console.log(req.body);
-    const { email, password, username, createdAt } = req.body;
+    const { email, password, username, role, createdAt } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.json({ message: "User already exists" });
@@ -14,6 +14,7 @@ const SignUp = async (req, res, next) => {
       email,
       password,
       name: username,
+      role: role,
       createdAt,
     });
     const token = createSecretToken(user._id);
@@ -32,11 +33,16 @@ const SignUp = async (req, res, next) => {
 
 Login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
+    var user = {};
     if (!email || !password) {
       return res.json({ message: "All fields are required" });
     }
-    const user = await User.findOne({ email });
+    if (role == "admin") {
+      user = await User.findOne({ email, role: "admin" });
+    } else {
+      user = await User.findOne({ email });
+    }
     if (!user) {
       return res.json({ message: "Incorrect password or email" });
     }

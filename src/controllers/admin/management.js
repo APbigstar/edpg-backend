@@ -52,3 +52,33 @@ module.exports.getUserPerformance = async (req, res) => {
     res.status(200).json({ message: error.message });
   }
 };
+
+module.exports.updateUser = async (req, res) => {
+  try {
+    console.log(req.body);
+    const user = await User.findByIdAndUpdate(req.params.id, req.body);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Delete a user by ID
+module.exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndRemove(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

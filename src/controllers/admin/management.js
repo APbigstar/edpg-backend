@@ -55,12 +55,11 @@ module.exports.getUserPerformance = async (req, res) => {
 
 module.exports.updateUser = async (req, res) => {
   try {
-    console.log(req.body);
     const user = await User.findByIdAndUpdate(req.params.id, req.body);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({ data: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -77,6 +76,37 @@ module.exports.deleteUser = async (req, res) => {
     }
 
     res.json({ message: "User deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.saveUser = async (req, res) => {
+  try {
+    const newUserId = new mongoose.Types.ObjectId();
+    const { email, name, role } = req.body;
+
+    role === "user" ? (password = "user") : (password = "admin");
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.json({ message: "User already exists" });
+    }
+
+    const user = await User.create({
+      _id: newUserId,
+      email,
+      name,
+      role,
+      password,
+    });
+
+    res.status(201).json({
+      message: "User created successfully",
+      success: true,
+      data: user,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

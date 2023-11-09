@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 // Models import
 const User = require("../../models/User");
+const Question = require("../../models/Question");
 const Transaction = require("../../models/Transaction");
 
 module.exports.getAdmins = async (_, res) => {
@@ -13,46 +14,6 @@ module.exports.getAdmins = async (_, res) => {
     res.status(200).json({ message: error.message });
   }
 };
-
-// Get User Performance
-module.exports.getUserPerformance = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const userWithStats = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(id) } }, // Match user id
-      {
-        // Compare user id with affiliate stats table
-        $lookup: {
-          from: "affiliatestats",
-          localField: "_id",
-          foreignField: "userId",
-          as: "affiliateStats",
-        },
-      },
-      { $unwind: "$affiliateStats" }, // Flatten Array/Object
-    ]);
-
-    // sale transactions
-    const saleTransactions = await Promise.all(
-      userWithStats[0].affiliateStats.affiliateSales.map((id) => {
-        return Transaction.findById(id);
-      })
-    );
-
-    // filtered sale transactions
-    const filteredSaleTransactions = saleTransactions.filter(
-      (transaction) => transaction !== null
-    );
-
-    res
-      .status(200)
-      .json({ user: userWithStats[0], sales: filteredSaleTransactions });
-  } catch (error) {
-    res.status(200).json({ message: error.message });
-  }
-};
-
 module.exports.updateUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body);
@@ -65,7 +26,6 @@ module.exports.updateUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 // Delete a user by ID
 module.exports.deleteUser = async (req, res) => {
   try {
@@ -81,7 +41,6 @@ module.exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports.saveUser = async (req, res) => {
   try {
     const newUserId = new mongoose.Types.ObjectId();
@@ -106,6 +65,87 @@ module.exports.saveUser = async (req, res) => {
       message: "User created successfully",
       success: true,
       data: user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getQuestions = async (req, res) => {
+  try {
+    const { category, type } = req.query;
+    const questions = await Question.find({ category, type });
+
+    console.log(questions);
+    res.status(200).json(questions);
+  } catch (error) {
+    res.status(200).json({ message: error.message });
+  }
+};
+module.exports.updateQuestion = async (req, res) => {
+  try {
+    const { question, answers, cases, type, category } = req.body;
+    const updateData = {
+      question,
+      answers,
+      cases: type === "empty" ? [] : cases,
+      type,
+      category,
+    };
+    const inputdata = await Question.findByIdAndUpdate(
+      req.params.id,
+      updateData
+    );
+    if (!question) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ data: inputdata });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Delete a user by ID
+module.exports.deleteQuestion = async (req, res) => {
+  try {
+    const question = await Question.findByIdAndRemove(req.params.id);
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    res.json({ message: "Question deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.saveQuestion = async (req, res) => {
+  try {
+    const newUserId = new mongoose.Types.ObjectId();
+    const { question, answers, cases, type, category } = req.body;
+
+    const existingUser = await User.findOne({ question, type, category });
+    if (existingUser) {
+      return res.json({ message: "Question already exists" });
+    }
+
+    const inputdata = await Question.create({
+      _id: newUserId,
+      question,
+      answers: answers.trim(" ").split(","),
+      cases: type === "empty" ? [] : cases.trim(" ").split(","),
+      type,
+      category,
+    });
+
+    res.status(201).json({
+      message: "User created successfully",
+      success: true,
+      data: inputdata,
     });
   } catch (error) {
     console.error(error);

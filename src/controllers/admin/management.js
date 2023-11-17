@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 // Models import
 const User = require("../../models/User");
 const Question = require("../../models/Question");
-const Transaction = require("../../models/Transaction");
+const Score = require("../../models/Score");
 
 module.exports.getAdmins = async (_, res) => {
   try {
@@ -75,6 +75,8 @@ module.exports.saveUser = async (req, res) => {
 module.exports.getQuestions = async (req, res) => {
   try {
     const { category, type } = req.query;
+
+    console.log(req.query);
     const questions = await Question.find({ category, type });
 
     console.log(questions);
@@ -136,8 +138,8 @@ module.exports.saveQuestion = async (req, res) => {
     const inputdata = await Question.create({
       _id: newUserId,
       question,
-      answers: answers.trim(" ").split(","),
-      cases: type === "empty" ? [] : cases.trim(" ").split(","),
+      answers: answers.replace(/\s/g, "").split(","),
+      cases: type === "empty" ? [] : cases.replace(/\s/g, "").split(","),
       type,
       category,
     });
@@ -150,5 +152,34 @@ module.exports.saveQuestion = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.saveScore = async (req, res) => {
+  const { user_id, score, category, type } = req.body;
+
+  console.log(user_id, score, category, type);
+
+  try {
+    const existingScore = await Score.findOne({ user_id, category, type });
+
+    if (existingScore) {
+      existingScore.score = score;
+      await existingScore.save();
+
+      return res
+        .status(200)
+        .json({ success: true, message: "Score updated successfully." });
+    }
+
+    const newScore = new Score({ user_id, score, category, type });
+    await newScore.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Score saved successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };

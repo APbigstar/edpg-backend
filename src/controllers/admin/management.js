@@ -88,10 +88,11 @@ module.exports.getQuestions = async (req, res) => {
 module.exports.updateQuestion = async (req, res) => {
   try {
     const { question, answers, cases, type, category } = req.body;
+
     const updateData = {
-      question,
-      answers,
-      cases: type === "empty" ? [] : cases,
+      question: question.replace(/\.*$/, ""),
+      answers: answers.replace(/\s/g, "").split(","),
+      cases: type === "empty" ? [] : cases.replace(/\s/g, "").split(","),
       type,
       category,
     };
@@ -137,7 +138,7 @@ module.exports.saveQuestion = async (req, res) => {
 
     const inputdata = await Question.create({
       _id: newUserId,
-      question,
+      question: question.replace(/\.*$/, ""),
       answers: answers.replace(/\s/g, "").split(","),
       cases: type === "empty" ? [] : cases.replace(/\s/g, "").split(","),
       type,

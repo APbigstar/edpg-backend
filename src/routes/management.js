@@ -10,6 +10,7 @@ const {
   saveQuestion,
   deleteQuestion,
   saveScore,
+  getScores,
 } = require("../controllers/admin/management.js");
 
 const router = express.Router();
@@ -25,6 +26,7 @@ router.put("/question/:id", updateQuestion);
 router.post("/question", saveQuestion);
 router.delete("/question/:id", deleteQuestion);
 
+router.get("/scores", getScores);
 router.post("/save-score", saveScore);
 
 module.exports = router;

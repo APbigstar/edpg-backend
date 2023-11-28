@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const scoreSchema = new mongoose.Schema(
   {
     user_id: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     score: {

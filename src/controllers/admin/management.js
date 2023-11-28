@@ -26,7 +26,6 @@ module.exports.updateUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-// Delete a user by ID
 module.exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndRemove(req.params.id);
@@ -71,7 +70,6 @@ module.exports.saveUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports.getQuestions = async (req, res) => {
   try {
     const { category, type } = req.query;
@@ -109,8 +107,6 @@ module.exports.updateQuestion = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Delete a user by ID
 module.exports.deleteQuestion = async (req, res) => {
   try {
     const question = await Question.findByIdAndRemove(req.params.id);
@@ -125,7 +121,6 @@ module.exports.deleteQuestion = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports.saveQuestion = async (req, res) => {
   try {
     const newUserId = new mongoose.Types.ObjectId();
@@ -155,7 +150,6 @@ module.exports.saveQuestion = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports.saveScore = async (req, res) => {
   const { user_id, score, category, type } = req.body;
 
@@ -182,5 +176,14 @@ module.exports.saveScore = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+module.exports.getScores = async (_, res) => {
+  try {
+    const data = await Score.find().populate("user_id", "name");
+    console.log(data);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(200).json({ message: error.message });
   }
 };
